@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MBTI 성격유형 테스트</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#6366f1;--primary-dark:#4f46e5;--bg-gradient:radial-gradient(circle at 20% 20%,#e0e7ff 0%,#f5f7ff 40%,#ffffff 100%);--card-bg:rgba(255,255,255,.75);--card-shadow:0 8px 24px rgba(0,0,0,.12)}
+    *{box-sizing:border-box}
+    html{min-height:100%}
+    body{margin:0;min-height:100%;font-family:'Noto Sans KR',sans-serif;display:flex;flex-direction:column;align-items:center;background:var(--bg-gradient);backdrop-filter:blur(2px);padding:2rem 1rem;color:#111827}
+    h1{font-size:2rem;font-weight:700;margin-bottom:1.5rem;background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    #test{width:100%;max-width:620px;background:var(--card-bg);border-radius:16px;padding:2.5rem 2rem;box-shadow:var(--card-shadow);backdrop-filter:blur(6px);animation:fadeIn .6s ease forwards}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .question{margin-bottom:2rem;position:relative;padding-left:2.4rem}
+    .question p{margin:0 0 1rem 0;font-weight:500;line-height:1.45}
+    .question::before{content:attr(data-num);position:absolute;left:0;top:.15rem;background:var(--primary);color:#fff;font-size:.75rem;font-weight:700;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;border-radius:50%;box-shadow:0 2px 6px rgba(99,102,241,.35)}
+    .options{display:flex;flex-direction:column;gap:.75rem}
+    label{display:flex;align-items:center;gap:.6rem;cursor:pointer;padding:.65rem .9rem;border-radius:10px;transition:background .2s}
+    label:hover{background:rgba(99,102,241,.08)}
+    input[type="radio"]{accent-color:var(--primary);width:1rem;height:1rem;flex-shrink:0}
+    .btn{background:var(--primary);color:#fff;border:none;border-radius:12px;padding:.9rem 1.2rem;font-size:1.05rem;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 12px rgba(99,102,241,.35)}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(99,102,241,.45)}
+    .btn:active{transform:translateY(0);box-shadow:0 3px 10px rgba(99,102,241,.4)}
+    #submitBtn{width:100%;margin-top:1rem}
+    #result{width:100%;max-width:620px;background:#eef2ff;border-radius:16px;padding:2rem;margin-top:2rem;text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.08);display:none;animation:fadeIn .6s ease forwards}
+    #result h2{margin-top:0;font-size:1.75rem;color:var(--primary-dark)}
+    #result p{margin:.5rem 0;line-height:1.6}
+    #result ul{list-style:none;padding:0;margin:.75rem 0 0 0}
+    #result li{margin:.25rem 0}
+    #btnGroup{display:flex;gap:.75rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+    @media(min-width:768px){h1{font-size:2.4rem}#test{padding:3rem}#submitBtn{width:auto;min-width:200px}}
+  </style>
+</head>
+<body>
+  <h1>MBTI 성격유형 테스트</h1>
+  <form id="test"><button type="submit" id="submitBtn" class="btn">결과 보기</button></form>
+  <div id="result"></div>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+/***** 질문 *****/
+const questions=[
+  {text:"사회적 상황에서 당신은…",a:{label:"많은 사람들과 교류하며 에너지를 얻는다",side:"E"},b:{label:"소수와 깊은 대화를 선호한다",side:"I"}},
+  {text:"과제를 해결할 때 당신은…",a:{label:"구체적 사실에 집중한다",side:"S"},b:{label:"숨은 패턴을 찾는다",side:"N"}},
+  {text:"더 끌리는 것은…",a:{label:"실용적 활용",side:"S"},b:{label:"새로운 가능성",side:"N"}},
+  {text:"의사결정 시 당신은…",a:{label:"객관적 논리를 중시한다",side:"T"},b:{label:"개인적 가치를 중시한다",side:"F"}},
+  {text:"피드백을 줄 때 당신은…",a:{label:"직설적이고 솔직하다",side:"T"},b:{label:"상대의 감정을 배려한다",side:"F"}},
+  {text:"당신의 일정은…",a:{label:"계획적이고 조직적이다",side:"J"},b:{label:"유연하고 즉흥적이다",side:"P"}},
+  {text:"마감기한이 다가오면…",a:{label:"안정감과 동기를 느낀다",side:"J"},b:{label:"제약을 느낀다",side:"P"}},
+  {text:"파티에서 당신은…",a:{label:"낯선 사람에게 먼저 말을 건다",side:"E"},b:{label:"다른 사람이 다가오길 기다린다",side:"I"}},
+  {text:"신뢰하는 정보는…",a:{label:"관찰 가능하고 측정 가능한 것",side:"S"},b:{label:"추상적이고 개념적인 것",side:"N"}},
+  {text:"갈등은 어떻게 해결되면 좋다고 생각하나…",a:{label:"객관적 원칙을 사용한다",side:"T"},b:{label:"사람들의 감정을 고려한다",side:"F"}},
+  {text:"여행 전 당신은…",a:{label:"세부 일정표를 만든다",side:"J"},b:{label:"즉흥적으로 탐험한다",side:"P"}},
+  {text:"당신의 책상은 보통…",a:{label:"깔끔하고 정돈되어 있다",side:"J"},b:{label:"창의적인 혼돈 상태다",side:"P"}}
+];
+
+/***** 16유형 설명 *****/
+const typeInfo={
+  ISTJ:{short:'책임감이 강하고 체계적인 관리자',long:'성실함과 신뢰성을 기반으로 체계적으로 업무를 완수합니다.',jobs:['회계사','행정 공무원','데이터 분석가']},
+  ISFJ:{short:'헌신적이며 세심한 보호자',long:'따뜻한 태도로 주변을 돌보며 세부 사항을 꼼꼼히 챙깁니다.',jobs:['간호사','교사','HR 코디네이터']},
+  INFJ:{short:'통찰력 있는 이상주의자',long:'깊은 통찰력과 비전으로 의미 있는 변화를 추구합니다.',jobs:['상담사','콘텐츠 기획자','NGO 매니저']},
+  INTJ:{short:'전략적 사고의 혁신가',long:'복잡한 시스템을 분석하고 장기 전략을 수립합니다.',jobs:['전략 컨설턴트','소프트웨어 아키텍트','연구 과학자']},
+  ISTP:{short:'유연하고 분석적인 해결사',long:'실용적인 기술과 즉흥적 대응 능력으로 문제를 해결합니다.',jobs:['기계 엔지니어','응급 구조사','포렌식 전문가']},
+  ISFP:{short:'따뜻하고 감각적인 예술가',long:'조용하지만 섬세한 감성을 지니고 미적 감각이 뛰어납니다.',jobs:['그래픽 디자이너','플로리스트','사진 작가']},
+  INFP:{short:'가치를 추구하는 중재자',long:'강한 내적 가치관으로 이상적인 세상을 꿈꾸며 창의력이 풍부합니다.',jobs:['작가','UX 디자이너','사회복지사']},
+  INTP:{short:'논리적이며 호기심 많은 사색가',long:'새로운 개념을 탐구하고 독창적 해결책을 제시합니다.',jobs:['데이터 과학자','시스템 엔지니어','철학 연구원']},
+  ESTP:{short:'즉흥적이고 활동적인 해결사',long:'현실적이고 에너지 넘치는 성향으로 직접 행동해 문제를 해결합니다.',jobs:['세일즈 매니저','소방관','이벤트 플래너']},
+  ESFP:{short:'사교적이며 에너지 넘치는 연예인',long:'사람들과 함께할 때 가장 행복하며 순간을 즐깁니다.',jobs:['배우','여행 가이드','마케팅 프로모터']},
+  ENFP:{short:'열정적이고 창의적인 활동가',long:'무한한 아이디어와 호기심으로 사람들의 잠재력을 발견합니다.',jobs:['브랜드 전략가','콘텐츠 크리에이터','스타트업 창업가']},
+  ENTP:{short:'재치 있고 논쟁을 즐기는 발명가',long:'지적 토론과 새로운 가능성을 탐구하는 데 열정적입니다.',jobs:['제품 매니저','벤처 캐피털리스트','변호사']},
+  ESTJ:{short:'현실적이며 조직적인 관리자',long:'체계적인 접근과 명확한 기준으로 목표를 달성합니다.',jobs:['프로젝트 매니저','군 장교','운영 관리자']},
+  ESFJ:{short:'협동적이고 책임감 있는 돌봄 제공자',long:'사람들 사이의 조화를 중시하며 세심하게 타인을 돌봅니다.',jobs:['이벤트 코디네이터','초등 교사','의료 서비스 관리자']},
+  ENFJ:{short:'카리스마 있고 영감을 주는 지도자',long:'강력한 공감 능력과 비전으로 팀을 하나로 묶습니다.',jobs:['인사 매니저','공공 정책 분석가','교육 프로그램 디렉터']},
+  ENTJ:{short:'단호하고 전략적인 통솔자',long:'결단력과 리더십으로 새로운 기회를 개척합니다.',jobs:['경영 컨설턴트','CEO','투자 은행가']}
+};
+
+/***** DOM 렌더링 *****/
+const form=document.getElementById('test');
+const submitBtn=document.getElementById('submitBtn');
+questions.forEach((q,i)=>{const d=document.createElement('div');d.className='question';d.dataset.num=i+1;d.innerHTML=`<p>${q.text}</p><div class="options"><label><input type="radio" name="q${i}" value="${q.a.side}" required> ${q.a.label}</label><label><input type="radio" name="q${i}" value="${q.b.side}"> ${q.b.label}</label></div>`;form.insertBefore(d,submitBtn)});
+
+/***** 결과 처리 *****/
+form.addEventListener('submit',e=>{e.preventDefault();const c={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};let ok=true;questions.forEach((_,i)=>{const v=form.elements[`q${i}`].value;if(!v) ok=false;else c[v]++});if(!ok){alert('모든 문항에 응답해주세요.');return;}const type=`${c.E>=c.I?'E':'I'}${c.S>=c.N?'S':'N'}${c.T>=c.F?'T':'F'}${c.J>=c.P?'J':'P'}`;showResult(type)});
+
+function showResult(type){const info=typeInfo[type];const box=document.getElementById('result');const jobsHtml=info.jobs.map(j=>`<li>• ${j}</li>`).join('');box.innerHTML=`<h2>당신의 유형: ${type}</h2><p><strong>${info.short}</strong></p><p>${info.long}</p><h3 style="margin:1.2rem 0 .5rem 0;font-size:1.1rem">추천 직업</h3><ul>${jobsHtml}</ul><div id="btnGroup"><button id="shareBtn" class="btn" type="button">결과 공유</button><button id="resetBtn" class="btn" type="button">다시 테스트</button></div>`;box.style.display='block';document.getElementById('resetBtn').addEventListener('click',resetTest);document.getElementById('shareBtn').addEventListener('click',()=>shareResult(type));window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});} 
+
+/***** 초기화 *****/
+function resetTest(){document.querySelectorAll('input[type="radio"]').forEach(r=>r.checked=false);document.getElementById('result').style.display='none';window.scrollTo({top:0,behavior:'smooth'});} 
+
+/***** 공유 카드 생성 *****/
+async function shareResult(type){const target=document.getElementById('result');try{const canvas=await html2canvas(target,{backgroundColor:null,scale:2});canvas.toBlob(async b=>{const file=new File([b],`${type}.png`,{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({title:`내 MBTI는 ${type}`,text:`나는 ${type} 유형이래!`,files:[file]});}else{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`${type}.png`;a.click();URL.revokeObjectURL(a.href);alert('이미지가 다운로드되었습니다. SNS에 직접 업로드해 주세요.');}},'image/png');}catch(e){console.error(e);alert('카드 생성에 실패했습니다.');}}
+</script>
+</body>
+</html>
