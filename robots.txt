@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fubu1997.github.io/MbtiTestSite/sitemap.xml
